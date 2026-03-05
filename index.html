@@ -28,8 +28,7 @@
     <div class="hero-overlay text-white py-24 px-6 text-center">
       <h1 class="text-4xl font-bold tracking-tight mb-2 drop-shadow-lg">Algonquin Park Canoe Trip Planner</h1>
       <p class="text-green-100 text-base max-w-lg mx-auto drop-shadow">
-        Enter your launch point, overnight camps, and take-out to get the fastest route
-        with portage, paddling, and time breakdowns — plus a suggested schedule.
+        Enter your starting point and take-out to get the fastest route with portage, paddling, and time breakdowns. Made by Jack Brownrigg
       </p>
     </div>
   </header>
@@ -137,7 +136,7 @@
         <summary class="flex items-center justify-between px-4 py-3 bg-stone-50
                         cursor-pointer select-none text-sm font-medium text-gray-700
                         hover:bg-stone-100 transition">
-          <span>Trip Posting Details</span>
+          <span>Pathfinder Trip Posting</span>
           <span class="text-gray-400 text-xs">optional — for formatted .docx download</span>
         </summary>
         <div class="p-4 space-y-4 text-sm">
@@ -812,7 +811,7 @@
     const n = waypoints.length;
     if (i === 0)     return 'Launch Point';
     if (i === n - 1) return 'Take-out Point';
-    return `Night ${i}`;
+    return getNightMode() === 'automatic' ? `Via ${i}` : `Night ${i}`;
   }
 
   function renderWaypoints() {
@@ -976,12 +975,10 @@
   document.querySelectorAll('input[name="night-mode"]').forEach(radio => {
     radio.addEventListener('change', () => {
       const auto = getNightMode() === 'automatic';
-      document.getElementById('add-night-btn').classList.toggle('hidden', auto);
       document.getElementById('auto-days-box').classList.toggle('hidden', !auto);
-      if (auto) {
-        waypoints = [waypoints[0], waypoints[waypoints.length - 1]];
-        renderWaypoints();
-      }
+      const addBtn = document.getElementById('add-night-btn');
+      addBtn.textContent = auto ? '+ Add Via Point' : '+ Add Night';
+      renderWaypoints();
     });
   });
 
