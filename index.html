@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Algonquin Park Canoe Trip Planner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+  <style>
+    .hero-overlay {
+      background: linear-gradient(160deg, rgba(13,51,32,0.72) 0%, rgba(20,83,45,0.60) 100%);
+    }
+    .stat-pill { background: linear-gradient(135deg, #f0fdf4, #dcfce7); }
+    .route-chip {
+      display: inline-block; background: #dcfce7; color: #166534;
+      font-size: 0.72rem; padding: 2px 8px; border-radius: 9999px; white-space: nowrap;
+    }
+    .route-arrow { color: #86efac; font-size: 0.7rem; vertical-align: middle; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    input[list]::-webkit-calendar-picker-indicator { opacity: 0; }
+  </style>
+</head>
+<body class="min-h-screen font-sans"
+      style="background-image:url('header.jpg');background-size:cover;background-position:center;background-attachment:fixed;">
+
+  <header class="shadow-xl">
+    <div class="hero-overlay text-white py-24 px-6 text-center">
+      <h1 class="text-4xl font-bold tracking-tight mb-2 drop-shadow-lg">Algonquin Park Canoe Trip Planner</h1>
+      <p class="text-green-100 text-base max-w-lg mx-auto drop-shadow">
+        Enter your launch point, overnight camps, and take-out to get the fastest route
+        with portage, paddling, and time breakdowns — plus a suggested schedule.
+      </p>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8 space-y-6">
+
+    <!-- Loading notice -->
+    <div id="loading-notice" class="bg-white rounded-2xl shadow-lg p-6 text-center text-gray-500 text-sm">
+      Loading route data…
+    </div>
+
+    <!-- Planner card -->
+    <div id="planner-card" class="hidden bg-white rounded-2xl shadow-lg p-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-5">Plan Your Route</h2>
+
+      <!-- Mode toggle -->
+      <div class="flex items-center gap-6 mb-4 text-sm">
+        <span class="font-medium text-gray-600">Nights:</span>
+        <label class="flex items-center gap-1.5 cursor-pointer">
+          <input type="radio" name="night-mode" value="manual" checked class="accent-green-700">
+          <span class="text-gray-700">Manual</span>
+        </label>
+        <label class="flex items-center gap-1.5 cursor-pointer">
+          <input type="radio" name="night-mode" value="automatic" class="accent-green-700">
+          <span class="text-gray-700">Automatic</span>
+        </label>
+        <div id="auto-days-box" class="hidden flex items-center gap-2">
+          <input type="number" id="auto-days" min="1" placeholder="nights"
+                 class="w-20 border border-gray-300 rounded-lg px-2 py-1 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-green-400">
+          <span class="text-gray-400 text-xs">nights (leave blank for 10-hr auto)</span>
+        </div>
+      </div>
+
+      <!-- Waypoints -->
+      <div id="waypoints-container" class="space-y-1 mb-4"></div>
+      <button id="add-night-btn"
+        class="w-full mt-1 py-2 border-2 border-dashed border-green-400 text-green-700
+               rounded-xl hover:bg-green-50 transition text-sm font-medium">
+        + Add Night
+      </button>
+
+      <!-- Speed settings -->
+      <details class="mt-5 border border-gray-200 rounded-xl overflow-hidden">
+        <summary class="flex items-center justify-between px-4 py-3 bg-stone-50
+                        cursor-pointer select-none text-sm font-medium text-gray-700
+                        hover:bg-stone-100 transition">
+          <span>Speed Settings</span>
+          <span class="text-gray-400 text-xs">click to expand &nbsp;
+            (defaults: lake 5 km/h · portage 4 km/h · creek 3 km/h · river 6 km/h)</span>
+        </summary>
+        <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Lake Paddling</label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="sp-lake" value="5" min="0.5" step="0.5"
+                     class="w-20 border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-green-400">
+              <span class="text-gray-400 text-sm">km/h</span>
+            </div>
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Portage</label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="sp-portage" value="4" min="0.5" step="0.5"
+                     class="w-20 border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-green-400">
+              <span class="text-gray-400 text-sm">km/h</span>
+            </div>
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Creek Paddling</label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="sp-creek" value="3" min="0.5" step="0.5"
+                     class="w-20 border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-green-400">
+              <span class="text-gray-400 text-sm">km/h</span>
+            </div>
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">River Paddling</label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="sp-river" value="6" min="0.5" step="0.5"
+                     class="w-20 border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-green-400">
+              <span class="text-gray-400 text-sm">km/h</span>
+            </div>
+          </div>
+          <div class="space-y-1 sm:col-span-2">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              Portage Overhead (loading &amp; unloading)
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="sp-overhead" value="10" min="0" step="1"
+                     class="w-20 border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-green-400">
+              <span class="text-gray-400 text-sm">min per portage</span>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- Trip Posting Details -->
+      <details class="mt-3 border border-gray-200 rounded-xl overflow-hidden">
+        <summary class="flex items-center justify-between px-4 py-3 bg-stone-50
+                        cursor-pointer select-none text-sm font-medium text-gray-700
+                        hover:bg-stone-100 transition">
+          <span>Trip Posting Details</span>
+          <span class="text-gray-400 text-xs">optional — for formatted .docx download</span>
+        </summary>
+        <div class="p-4 space-y-4 text-sm">
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Trip #</label>
+              <input type="text" id="tp-number" placeholder="49"
+                     class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-green-400">
+            </div>
+            <div class="space-y-1">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Trip Name</label>
+              <input type="text" id="tp-name" placeholder="Try to Catch Eddie"
+                     class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-green-400">
+            </div>
+            <div class="space-y-1">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Start Date</label>
+              <input type="date" id="tp-start-date"
+                     class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-green-400">
+            </div>
+            <div class="space-y-1">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">End Date</label>
+              <input type="date" id="tp-end-date"
+                     class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-green-400">
+            </div>
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Campers</label>
+            <textarea id="tp-campers" rows="3" placeholder="John Smith, Jane Doe, ..."
+                      class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                             focus:outline-none focus:ring-2 focus:ring-green-400 resize-y"></textarea>
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              Headman <span class="text-gray-400 font-normal">(listed first in Staff, underlined)</span>
+            </label>
+            <input type="text" id="tp-headman" placeholder="Matt Wesorick"
+                   class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                          focus:outline-none focus:ring-2 focus:ring-green-400">
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              Staff <span class="text-gray-400 font-normal">(other staff — headman added automatically)</span>
+            </label>
+            <textarea id="tp-staff" rows="3" placeholder="Nico Bustamante, ..."
+                      class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                             focus:outline-none focus:ring-2 focus:ring-green-400 resize-y"></textarea>
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Canoes</label>
+            <textarea id="tp-canoes" rows="2" placeholder="#44 Steve Lapey, ..."
+                      class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                             focus:outline-none focus:ring-2 focus:ring-green-400 resize-y"></textarea>
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Nations</label>
+            <textarea id="tp-nations" rows="2" placeholder="..."
+                      class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                             focus:outline-none focus:ring-2 focus:ring-green-400 resize-y"></textarea>
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Territories</label>
+            <textarea id="tp-territories" rows="2" placeholder="..."
+                      class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                             focus:outline-none focus:ring-2 focus:ring-green-400 resize-y"></textarea>
+          </div>
+        </div>
+      </details>
+
+      <!-- Plan / Download buttons -->
+      <div class="mt-5 flex gap-3">
+        <button id="plan-btn"
+          class="flex-1 py-3 bg-green-700 hover:bg-green-800 active:bg-green-900
+                 text-white font-semibold rounded-xl transition text-base shadow-sm">
+          Plan Route
+        </button>
+        <button id="download-btn" disabled
+          class="px-5 py-3 bg-stone-200 text-stone-400 font-semibold rounded-xl
+                 transition text-sm cursor-not-allowed"
+          title="Plan a route first">
+          &#8595; Download
+        </button>
+      </div>
+
+      <div id="error-box"
+           class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg
+                  text-sm text-red-700 font-medium"></div>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden space-y-5">
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-1">
+          <h2 class="text-lg font-semibold text-gray-800">Trip Summary</h2>
+          <span id="trip-badge"
+                class="text-xs font-semibold bg-green-100 text-green-800 px-3 py-1 rounded-full"></span>
+        </div>
+        <p id="trip-subtitle" class="text-gray-500 text-sm mb-5"></p>
+        <div id="trip-totals" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+        <div id="trip-breakdown" class="mt-3 text-xs text-gray-400"></div>
+
+        <!-- Pacing options -->
+        <div id="suggestion-box" class="hidden mt-5">
+          <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Pacing Options</div>
+          <div class="space-y-3">
+            <div id="sugg-daytrip" class="hidden p-4 bg-sky-50 border border-sky-200 rounded-xl">
+              <div class="text-sm font-semibold text-sky-800 mb-2">As a Day Trip</div>
+              <div id="sugg-daytrip-stats" class="grid grid-cols-3 gap-2 text-center text-xs"></div>
+            </div>
+            <div id="sugg-multiday" class="hidden p-4 bg-amber-50 border border-amber-200 rounded-xl">
+              <div class="flex items-center justify-between mb-2">
+                <div id="sugg-multiday-title" class="text-sm font-semibold text-amber-800"></div>
+                <div id="sugg-multiday-hpd" class="text-xs text-amber-600"></div>
+              </div>
+              <div id="sugg-multiday-camps" class="text-xs text-amber-700 mb-2"></div>
+              <div id="sugg-multiday-days" class="divide-y divide-amber-100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="day-cards" class="space-y-4"></div>
+    </div>
+  </main>
+
+  <datalist id="lakes-datalist"></datalist>
+
+  <script>
+  // ================================================================
+  // Constants
+  // ================================================================
+  const DEFAULT_SPEEDS = { lake: 12, portage: 15, creek: 20, river: 10, overhead: 10 };
+
+  // ================================================================
+  // Data
+  // ================================================================
+  let graphData = null;
+
+  async function loadData() {
+    const r = await fetch('data.json');
+    graphData = await r.json();
+    buildAutocomplete();
+    document.getElementById('loading-notice').classList.add('hidden');
+    document.getElementById('planner-card').classList.remove('hidden');
+  }
+
+  function buildAutocomplete() {
+    const dl = document.getElementById('lakes-datalist');
+    const seen = new Set();
+    for (const node of graphData.nodes) {
+      const name = graphData.display_map[node];
+      if (!seen.has(name)) {
+        seen.add(name);
+        const opt = document.createElement('option');
+        opt.value = name;
+        dl.appendChild(opt);
+      }
+    }
+  }
+
+  function displayName(node) { return graphData.display_map[node] || node; }
+
+  // ================================================================
+  // Min-Heap (for Dijkstra)
+  // ================================================================
+  class MinHeap {
+    constructor() { this.h = []; }
+    push(item) { this.h.push(item); this._up(this.h.length - 1); }
+    pop() {
+      const top = this.h[0], last = this.h.pop();
+      if (this.h.length) { this.h[0] = last; this._down(0); }
+      return top;
+    }
+    get size() { return this.h.length; }
+    _up(i) {
+      while (i > 0) {
+        const p = (i - 1) >> 1;
+        if (this.h[p][0] <= this.h[i][0]) break;
+        [this.h[p], this.h[i]] = [this.h[i], this.h[p]]; i = p;
+      }
+    }
+    _down(i) {
+      const n = this.h.length;
+      while (true) {
+        let s = i, l = 2*i+1, r = 2*i+2;
+        if (l < n && this.h[l][0] < this.h[s][0]) s = l;
+        if (r < n && this.h[r][0] < this.h[s][0]) s = r;
+        if (s === i) break;
+        [this.h[s], this.h[i]] = [this.h[i], this.h[s]]; i = s;
+      }
+    }
+  }
+
+  // ================================================================
+  // Graph building
+  // ================================================================
+  function buildGraph(edges, speeds) {
+    const graph = {};
+    for (const e of edges) {
+      const t = e.lake        * speeds.lake     +
+                e.portage_km  * speeds.portage  +
+                e.creek       * speeds.creek    +
+                e.river       * speeds.river    +
+                e.num_portages * speeds.overhead;
+      const data = { ...e, time: t };
+      for (const [a, b] of [[e.a, e.b], [e.b, e.a]]) {
+        if (!graph[a]) graph[a] = [];
+        graph[a].push([b, t, data]);
+      }
+    }
+    return graph;
+  }
+
+  // ================================================================
+  // Dijkstra
+  // ================================================================
+  function dijkstra(graph, start, goal) {
+    const dist = { [start]: 0 };
+    const prev = {};
+    const visited = new Set();
+    const heap = new MinHeap();
+    let counter = 0;
+    heap.push([0, counter++, start]);
+
+    while (heap.size) {
+      const [cost, , u] = heap.pop();
+      if (visited.has(u)) continue;
+      visited.add(u);
+      if (u === goal) break;
+      for (const [v, w] of (graph[u] || [])) {
+        if (visited.has(v)) continue;
+        const nc = cost + w;
+        if (nc < (dist[v] ?? Infinity)) {
+          dist[v] = nc; prev[v] = u;
+          heap.push([nc, counter++, v]);
+        }
+      }
+    }
+    if (!(goal in dist)) return null;
+    const path = []; let cur = goal;
+    while (cur !== start) {
+      path.push(cur);
+      if (!(cur in prev)) return null;
+      cur = prev[cur];
+    }
+    path.push(start);
+    return path.reverse();
+  }
+
+  // ================================================================
+  // Path statistics
+  // ================================================================
+  function buildLookup(graph) {
+    const lk = {};
+    for (const [u, nbrs] of Object.entries(graph))
+      for (const [v, , data] of nbrs) lk[u + '|||' + v] = data;
+    return lk;
+  }
+
+  function pathStats(path, graph) {
+    const lk = buildLookup(graph);
+    const s = { lake: 0, portage_km: 0, creek: 0, river: 0, num_portages: 0, time: 0 };
+    for (let i = 0; i < path.length - 1; i++) {
+      const a = path[i], b = path[i+1];
+      const d = lk[a+'|||'+b] || lk[b+'|||'+a];
+      if (d) {
+        s.lake += d.lake; s.portage_km += d.portage_km;
+        s.creek += d.creek; s.river += d.river;
+        s.num_portages += d.num_portages; s.time += d.time;
+      }
+    }
+    s.total_paddle = s.lake + s.creek + s.river;
+    return s;
+  }
+
+  // ================================================================
+  // Suggestions
+  // ================================================================
+  function computeSuggestions(fullPath, graph, hoursPerDay = 10) {
+    const st = pathStats(fullPath, graph);
+    const totalHours = st.time / 60;
+    const r = v => Math.round(v * 10) / 10;
+
+    const dayTrip = {
+      hours: r(totalHours), paddle_km: r(st.total_paddle),
+      lake_km: r(st.lake), creek_km: r(st.creek),
+      river_km: r(st.river), portage_km: r(st.portage_km),
+      portages: st.num_portages,
+    };
+
+    if (totalHours <= hoursPerDay) return { applicable: false, day_trip: dayTrip, multi_day: null };
+
+    const numDays = Math.ceil(totalHours / hoursPerDay);
+    const timePerSeg = st.time / numDays;
+    const lk = buildLookup(graph);
+
+    let accumulated = 0, nextTarget = timePerSeg;
+    const splitIndices = [];
+    for (let i = 0; i < fullPath.length - 1; i++) {
+      const a = fullPath[i], b = fullPath[i+1];
+      const d = lk[a+'|||'+b] || lk[b+'|||'+a];
+      if (d) accumulated += d.time;
+      if (accumulated >= nextTarget && splitIndices.length < numDays - 1) {
+        splitIndices.push(i + 1); nextTarget += timePerSeg;
+      }
+    }
+
+    const breakpoints = [0, ...splitIndices, fullPath.length - 1];
+    const daysOut = [];
+    for (let k = 0; k < breakpoints.length - 1; k++) {
+      const seg = fullPath.slice(breakpoints[k], breakpoints[k+1] + 1);
+      if (seg.length < 2) continue;
+      const ss = pathStats(seg, graph);
+      const fromN = seg.find(n => !n.startsWith('*AP')) || seg[0];
+      const toN   = [...seg].reverse().find(n => !n.startsWith('*AP')) || seg[seg.length-1];
+      daysOut.push({
+        day: k+1, from: displayName(fromN), to: displayName(toN),
+        hours: r(ss.time/60), paddle_km: r(ss.total_paddle),
+        lake_km: r(ss.lake), creek_km: r(ss.creek),
+        river_km: r(ss.river), portage_km: r(ss.portage_km), portages: ss.num_portages,
+      });
+    }
+
+    return {
+      applicable: true, day_trip: dayTrip,
+      multi_day: {
+        num_days: numDays, hours_per_day: r(totalHours / numDays),
+        camps: splitIndices.map(i => displayName(fullPath[i])),
+        days: daysOut,
+      },
+    };
+  }
+
+  // ================================================================
+  // Split path for automatic date-based subdivision
+  // ================================================================
+  function splitPathForDates(fullPath, graph, numDays) {
+    if (numDays <= 1 || fullPath.length < 2) return [];
+    const lk = buildLookup(graph);
+    let totalTime = 0;
+    for (let i = 0; i < fullPath.length - 1; i++) {
+      const d = lk[fullPath[i]+'|||'+fullPath[i+1]] || lk[fullPath[i+1]+'|||'+fullPath[i]];
+      if (d) totalTime += d.time;
+    }
+    if (!totalTime) return [];
+
+    const timePerSeg = totalTime / numDays;
+    let accumulated = 0, nextTarget = timePerSeg;
+    const splitIndices = [];
+    for (let i = 0; i < fullPath.length - 1; i++) {
+      const d = lk[fullPath[i]+'|||'+fullPath[i+1]] || lk[fullPath[i+1]+'|||'+fullPath[i]];
+      if (d) accumulated += d.time;
+      if (accumulated >= nextTarget && splitIndices.length < numDays - 1) {
+        splitIndices.push(i + 1); nextTarget += timePerSeg;
+      }
+    }
+    return splitIndices.map(i => displayName(fullPath[i]));
+  }
+
+  // ================================================================
+  // Route helpers
+  // ================================================================
+  function stripModifier(name) { return name.replace(/\s*\([^)]+\)\s*$/, '').trim(); }
+
+  function deduplicateRoute(names) {
+    const base = n => stripModifier(n);
+    const result = [];
+    for (const name of names) {
+      if (result.length && base(result[result.length-1]) === base(name)) {
+        if (result[result.length-1].includes('(') && !name.includes('('))
+          result[result.length-1] = name;
+      } else result.push(name);
+    }
+    return result;
+  }
+
+  function splitRouteAtCamps(routeNames, camps) {
+    if (!camps.length) return [routeNames];
+    const base = n => stripModifier(n);
+    const campBases = new Set(camps.map(base));
+    const segments = [], cur = [];
+    for (const name of routeNames) {
+      cur.push(name);
+      if (campBases.has(base(name))) { segments.push([...cur]); cur.length = 0; }
+    }
+    if (cur.length) segments.push(cur);
+    return segments;
+  }
+
+  function countNames(text) {
+    if (!text || !text.trim()) return 0;
+    return text.split(/[,\n]/).filter(p => p.trim() && p.trim().toLowerCase() !== 'none').length;
+  }
+
+  // ================================================================
+  // Fuzzy matching
+  // ================================================================
+  function fuzzyMatch(name) {
+    name = name.trim();
+    if (graphData.display_map[name]) return name;
+    for (const [node, disp] of Object.entries(graphData.display_map))
+      if (disp === name) return node;
+    const nl = name.toLowerCase();
+    for (const [node, disp] of Object.entries(graphData.display_map))
+      if (disp.toLowerCase() === nl) return node;
+    const bare = name.replace(/\s+(lake|river|creek|pond|bay|access point)s?$/i, '').trim().toLowerCase();
+    let unq = null, qua = null;
+    for (const [node, disp] of Object.entries(graphData.display_map)) {
+      if (disp.toLowerCase().includes(bare)) {
+        if (!node.startsWith('(') && !node.startsWith('*')) { if (!unq) unq = node; }
+        else { if (!qua) qua = node; }
+      }
+    }
+    return unq || qua || null;
+  }
+
+  // ================================================================
+  // Planning
+  // ================================================================
+  function runPlan(waypoints, speeds) {
+    const graph = buildGraph(graphData.edges, speeds);
+    const r = v => Math.round(v * 10) / 10;
+    const resolved = [];
+
+    for (const wp of waypoints) {
+      const node = fuzzyMatch(wp);
+      if (!node) return { error: `Could not find lake: "${wp}"` };
+      resolved.push(node);
+    }
+
+    const days = [], rawPaths = [];
+    for (let i = 0; i < resolved.length - 1; i++) {
+      const [s, g] = [resolved[i], resolved[i+1]];
+      if (s === g) return { error: `Start and end are the same: ${displayName(s)}` };
+      const p = dijkstra(graph, s, g);
+      if (!p) return { error: `No route found from "${displayName(s)}" to "${displayName(g)}"` };
+      rawPaths.push(p);
+      const stats = pathStats(p, graph);
+      const dispPath = p.filter(n => !n.startsWith('*AP') || n === s || n === g);
+      days.push({
+        day: i+1, from: displayName(s), to: displayName(g),
+        route: dispPath.map(n => displayName(n)),
+        stats: {
+          portages: stats.num_portages,
+          portage_km: r(stats.portage_km), lake_km: r(stats.lake),
+          creek_km: r(stats.creek), river_km: r(stats.river),
+          paddle_km: r(stats.total_paddle), hours: r(stats.time / 60),
+        },
+      });
+    }
+
+    const totals = {
+      portages:   days.reduce((s, d) => s + d.stats.portages, 0),
+      portage_km: r(days.reduce((s, d) => s + d.stats.portage_km, 0)),
+      lake_km:    r(days.reduce((s, d) => s + d.stats.lake_km, 0)),
+      creek_km:   r(days.reduce((s, d) => s + d.stats.creek_km, 0)),
+      river_km:   r(days.reduce((s, d) => s + d.stats.river_km, 0)),
+      paddle_km:  r(days.reduce((s, d) => s + d.stats.paddle_km, 0)),
+      hours:      r(days.reduce((s, d) => s + d.stats.hours, 0)),
+      nights:     waypoints.length - 2,
+    };
+
+    const fullPath = [...rawPaths[0]];
+    for (const p of rawPaths.slice(1)) fullPath.push(...p.slice(1));
+
+    const suggestions = computeSuggestions(fullPath, graph);
+
+    const fullRouteDisplay = [];
+    days.forEach((day, i) => {
+      if (i === 0) fullRouteDisplay.push(...day.route);
+      else fullRouteDisplay.push(...day.route.slice(1));
+    });
+
+    return { days, totals, resolved: resolved.map(n => displayName(n)),
+             suggestions, full_path: fullPath, full_route_display: fullRouteDisplay };
+  }
+
+  // ================================================================
+  // DOCX generation (docx v7)
+  // ================================================================
+  async function generateTripDocx(result, metadata, campsOverride = null) {
+    const { Document, Packer, Paragraph, TextRun, UnderlineType } = window.docx;
+    const { days, totals: t } = result;
+
+    const trip_number  = (metadata.trip_number  || '1').toString().trim();
+    const trip_name    = (metadata.trip_name    || 'Temporary').trim();
+    const headman      = (metadata.headman      || '').trim();
+    const campers      = (metadata.campers      || 'None').trim();
+    const staff        = (metadata.staff        || 'None').trim();
+    const canoes       = (metadata.canoes       || 'None').trim();
+    const nations      = (metadata.nations      || 'None').trim();
+    const territories  = (metadata.territories  || 'None').trim();
+
+    let startDt = null, endDt = null;
+    try { if (metadata.start_date) startDt = new Date(metadata.start_date + 'T12:00:00'); } catch(e) {}
+    try { if (metadata.end_date)   endDt   = new Date(metadata.end_date   + 'T12:00:00'); } catch(e) {}
+    if (!startDt) {
+      const today = new Date();
+      startDt = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12);
+    }
+
+    const totalDays   = (startDt && endDt) ? Math.round((endDt - startDt) / 86400000) + 1 : t.nights + 1;
+    const totalPeople = (headman ? 1 : 0) + countNames(campers) + countNames(staff);
+    const effectiveCamps = campsOverride !== null ? campsOverride : days.slice(0, -1).map(d => d.to);
+
+    const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    function fmtDate(dt) { return `${DAY_NAMES[dt.getDay()]}. ${dt.getMonth()+1}/${dt.getDate()}`; }
+
+    const sp0 = { spacing: { before: 0, after: 0 } };
+    const blank = () => new Paragraph({ ...sp0, children: [] });
+    const paras = [];
+
+    // Line 1: header
+    const suffixParts = [];
+    if (startDt && endDt) suffixParts.push(`${fmtDate(startDt)} - ${fmtDate(endDt)}`);
+    else if (startDt) suffixParts.push(fmtDate(startDt));
+    if (totalPeople > 0) suffixParts.push(`${totalPeople} Men`);
+    suffixParts.push(`${totalDays} Days`);
+
+    paras.push(new Paragraph({
+      ...sp0,
+      children: [
+        ...(trip_number ? [new TextRun({ text: `${trip_number}. `, bold: true })] : []),
+        ...(trip_name   ? [new TextRun({ text: trip_name, underline: { type: UnderlineType.SINGLE } })] : []),
+        new TextRun({ text: `  \u2013  ${suffixParts.join(' - ')}` }),
+      ],
+    }));
+
+    // Route
+    const fullRoute = deduplicateRoute(result.full_route_display || []);
+    const segments  = splitRouteAtCamps(fullRoute, effectiveCamps);
+    const routeLine = segments.map(seg => seg.map(stripModifier).join(', ')).join('; ');
+    paras.push(blank());
+    paras.push(new Paragraph({ ...sp0, children: [
+      new TextRun({ text: 'Route: ', bold: true }),
+      new TextRun({ text: routeLine }),
+    ]}));
+
+    // Nations
+    if (nations) {
+      paras.push(blank());
+      paras.push(new Paragraph({ ...sp0, children: [
+        new TextRun({ text: 'Nations: ', bold: true }), new TextRun({ text: nations }),
+      ]}));
+    }
+
+    // Territories
+    if (territories) {
+      paras.push(blank());
+      paras.push(new Paragraph({ ...sp0, children: [
+        new TextRun({ text: 'Territories: ', bold: true }), new TextRun({ text: territories }),
+      ]}));
+    }
+
+    // Campers
+    if (campers) {
+      paras.push(blank());
+      paras.push(new Paragraph({ ...sp0, children: [
+        new TextRun({ text: 'Campers: ', bold: true }), new TextRun({ text: campers }),
+      ]}));
+    }
+
+    // Staff
+    if (headman || staff) {
+      paras.push(blank());
+      const staffRuns = [new TextRun({ text: 'Staff: ', bold: true })];
+      if (headman) {
+        staffRuns.push(new TextRun({ text: headman, underline: { type: UnderlineType.SINGLE } }));
+        const staffClean = staff.replace(headman, '').replace(/^[\s,]+/, '').trim();
+        if (staffClean && staffClean.toLowerCase() !== 'none')
+          staffRuns.push(new TextRun({ text: ', ' + staffClean }));
+      } else staffRuns.push(new TextRun({ text: staff }));
+      paras.push(new Paragraph({ ...sp0, children: staffRuns }));
+    }
+
+    // Canoes
+    if (canoes) {
+      paras.push(blank());
+      paras.push(new Paragraph({ ...sp0, children: [
+        new TextRun({ text: 'Canoes: ', bold: true }), new TextRun({ text: canoes }),
+      ]}));
+    }
+
+    // Stay at
+    if (effectiveCamps.length) {
+      paras.push(blank());
+      const nightLabels = effectiveCamps.map((_, i) => {
+        const nd = new Date(startDt);
+        nd.setDate(nd.getDate() + i + 1);
+        return `${nd.getMonth()+1}/${nd.getDate()}`;
+      });
+      const pairs = nightLabels.map((lbl, i) => `${lbl}: ${stripModifier(effectiveCamps[i])}`);
+      for (let i = 0; i < pairs.length; i += 2) {
+        const lineText = pairs[i] + (i+1 < pairs.length ? `    ${pairs[i+1]}` : '');
+        paras.push(new Paragraph({
+          ...sp0,
+          children: [
+            ...(i === 0 ? [new TextRun({ text: 'Stay at:\t', bold: true })] : [new TextRun({ text: '\t\t' })]),
+            new TextRun({ text: lineText }),
+          ],
+        }));
+      }
+    }
+
+    const doc = new Document({ sections: [{ children: paras }] });
+    return await Packer.toBlob(doc);
+  }
+
+  // ================================================================
+  // UI State
+  // ================================================================
+  let waypoints  = ['', ''];
+  let lastResult = null;
+
+  function getNightMode() {
+    return document.querySelector('input[name="night-mode"]:checked')?.value || 'manual';
+  }
+
+  function getSpeeds() {
+    const kmh = {
+      lake:     parseFloat(document.getElementById('sp-lake').value)     || 5,
+      portage:  parseFloat(document.getElementById('sp-portage').value)  || 4,
+      creek:    parseFloat(document.getElementById('sp-creek').value)    || 3,
+      river:    parseFloat(document.getElementById('sp-river').value)    || 6,
+      overhead: parseFloat(document.getElementById('sp-overhead').value) || 10,
+    };
+    return {
+      lake:     60 / kmh.lake,
+      portage:  60 / kmh.portage,
+      creek:    60 / kmh.creek,
+      river:    60 / kmh.river,
+      overhead: kmh.overhead,
+    };
+  }
+
+  function getNightsCount() {
+    if (getNightMode() === 'manual') return Math.max(0, waypoints.length - 2);
+    const n = parseInt(document.getElementById('auto-days')?.value);
+    if (!isNaN(n) && n > 0) return n;
+    if (lastResult?.suggestions?.applicable) return lastResult.suggestions.multi_day.num_days - 1;
+    return 0;
+  }
+
+  function getMetadata() {
+    const today  = new Date();
+    const pad    = v => String(v).padStart(2, '0');
+    const fmtD   = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const todayS = fmtD(today);
+    const endDt  = new Date(today); endDt.setDate(endDt.getDate() + getNightsCount());
+
+    return {
+      headman:     document.getElementById('tp-headman')?.value?.trim()         || '',
+      trip_number: document.getElementById('tp-number')?.value?.trim()          || '1',
+      trip_name:   document.getElementById('tp-name')?.value?.trim()            || 'Temporary',
+      start_date:  document.getElementById('tp-start-date')?.value              || todayS,
+      end_date:    document.getElementById('tp-end-date')?.value                || fmtD(endDt),
+      campers:     document.getElementById('tp-campers')?.value?.trim()         || 'None',
+      staff:       document.getElementById('tp-staff')?.value?.trim()           || 'None',
+      canoes:      document.getElementById('tp-canoes')?.value?.trim()          || 'None',
+      nations:     document.getElementById('tp-nations')?.value?.trim()         || 'None',
+      territories: document.getElementById('tp-territories')?.value?.trim()     || 'None',
+    };
+  }
+
+  // ================================================================
+  // Waypoint rendering
+  // ================================================================
+  function labelFor(i) {
+    const n = waypoints.length;
+    if (i === 0)     return 'Launch Point';
+    if (i === n - 1) return 'Take-out Point';
+    return `Night ${i}`;
+  }
+
+  function renderWaypoints() {
+    const c = document.getElementById('waypoints-container');
+    c.innerHTML = '';
+    waypoints.forEach((val, i) => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2';
+
+      const lbl = document.createElement('div');
+      lbl.className = 'text-xs font-semibold text-gray-500 w-28 shrink-0 text-right pr-1';
+      lbl.textContent = labelFor(i);
+
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.setAttribute('list', 'lakes-datalist');
+      inp.value = val;
+      inp.placeholder = i === 0 ? 'e.g. Canoe Lake (Portage Store)' :
+                        i === waypoints.length - 1 ? 'e.g. Rain Lake' : 'Lake name';
+      inp.className = 'flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm ' +
+        'focus:outline-none focus:ring-2 focus:ring-green-400 bg-white';
+      inp.addEventListener('change', e => { waypoints[i] = e.target.value; });
+      inp.addEventListener('input',  e => { waypoints[i] = e.target.value; });
+
+      row.appendChild(lbl);
+      row.appendChild(inp);
+
+      if (waypoints.length > 2 && i > 0 && i < waypoints.length - 1) {
+        const rm = document.createElement('button');
+        rm.innerHTML = '&#10005;';
+        rm.className = 'text-gray-300 hover:text-red-400 text-sm px-1 transition shrink-0';
+        rm.onclick = () => { waypoints.splice(i, 1); renderWaypoints(); };
+        row.appendChild(rm);
+      }
+
+      c.appendChild(row);
+
+      if (i < waypoints.length - 1) {
+        const arr = document.createElement('div');
+        arr.className = 'text-gray-300 text-center text-xs pl-28';
+        arr.textContent = '↓';
+        c.appendChild(arr);
+      }
+    });
+  }
+
+  // ================================================================
+  // Results rendering
+  // ================================================================
+  function statPill(label, value, unit, green = false) {
+    return `<div class="stat-pill rounded-xl p-3 text-center">
+      <div class="text-xl font-bold ${green ? 'text-green-700' : 'text-gray-800'}">${value}</div>
+      <div class="text-xs text-gray-500">${unit}</div>
+      <div class="text-xs font-medium text-gray-600 mt-0.5">${label}</div>
+    </div>`;
+  }
+
+  function routeChips(route) {
+    return route.map((r, i) =>
+      `<span class="route-chip">${r}</span>` +
+      (i < route.length - 1 ? '<span class="route-arrow mx-0.5">&#8250;</span>' : '')
+    ).join('');
+  }
+
+  function renderResults(data) {
+    lastResult = data;
+
+    const dlBtn = document.getElementById('download-btn');
+    dlBtn.disabled = false;
+    dlBtn.className = 'px-5 py-3 bg-stone-600 hover:bg-stone-700 text-white font-semibold ' +
+                      'rounded-xl transition text-sm cursor-pointer';
+
+    document.getElementById('results').classList.remove('hidden');
+    const { days, totals: t, resolved, suggestions: sugg } = data;
+    const nights = t.nights;
+
+    document.getElementById('trip-badge').textContent =
+      nights === 0 ? 'Day Trip' : nights === 1 ? '1 Night' : `${nights} Nights`;
+    document.getElementById('trip-subtitle').textContent = resolved.join(' → ');
+
+    document.getElementById('trip-totals').innerHTML =
+      statPill('Total Paddle', t.paddle_km, 'km', true) +
+      statPill('Portage',      t.portage_km, 'km') +
+      statPill('Portages',     t.portages,   'crossings') +
+      statPill('Est. Total',   t.hours,      'hours');
+
+    const bd = document.getElementById('trip-breakdown');
+    bd.textContent = (t.creek_km > 0 || t.river_km > 0)
+      ? `Paddle: lake ${t.lake_km} km · creek ${t.creek_km} km · river ${t.river_km} km`
+      : `Paddle: lake ${t.lake_km} km`;
+
+    // Pacing options
+    const suggBox = document.getElementById('suggestion-box');
+    if (sugg && sugg.applicable) {
+      suggBox.classList.remove('hidden');
+      const dt = sugg.day_trip, md = sugg.multi_day;
+
+      document.getElementById('sugg-daytrip').classList.remove('hidden');
+      document.getElementById('sugg-daytrip-stats').innerHTML =
+        `<div><div class="font-bold text-sky-700">${dt.hours} hrs</div><div class="text-gray-500">Total Time</div></div>` +
+        `<div><div class="font-bold text-sky-700">${dt.paddle_km} km</div><div class="text-gray-500">Paddle</div></div>` +
+        `<div><div class="font-bold text-sky-700">${dt.portage_km} km</div><div class="text-gray-500">Portage</div></div>`;
+
+      document.getElementById('sugg-multiday').classList.remove('hidden');
+      document.getElementById('sugg-multiday-title').textContent = `As ${md.num_days} Days (${md.num_days-1} nights)`;
+      document.getElementById('sugg-multiday-hpd').textContent = `~${md.hours_per_day} hrs/day`;
+      document.getElementById('sugg-multiday-camps').textContent = 'Camps: ' + md.camps.join(' \u2192 ');
+      document.getElementById('sugg-multiday-days').innerHTML = md.days.map(d =>
+        `<div class="py-2">
+          <div class="flex justify-between text-xs font-medium text-amber-800">
+            <span>Day ${d.day}: ${d.from} \u2192 ${d.to}</span><span>${d.hours} hrs</span>
+          </div>
+          <div class="text-xs text-amber-600 mt-0.5">
+            Paddle ${d.paddle_km} km &nbsp;&middot;&nbsp; Portage ${d.portage_km} km (${d.portages} portages)
+          </div>
+        </div>`
+      ).join('');
+    } else {
+      suggBox.classList.add('hidden');
+    }
+
+    // Day cards
+    const dc = document.getElementById('day-cards');
+    dc.innerHTML = '';
+    days.forEach(day => {
+      const s = day.stats;
+      const dayLabel = days.length === 1 ? 'Day Trip' :
+        day.day === days.length ? `Day ${day.day} — Final Leg` : `Day ${day.day}`;
+      const card = document.createElement('div');
+      card.className = 'bg-white rounded-2xl shadow-lg p-6';
+      card.innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-gray-800 text-base">${dayLabel}</h3>
+          <span class="text-xs text-gray-400 font-medium">${day.from} &#8594; ${day.to}</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
+          ${statPill('Paddle', s.paddle_km, 'km', true)}
+          ${statPill('Portage', s.portage_km, 'km')}
+          ${statPill('Portages', s.portages, 'crossings')}
+          ${statPill('Est. Time', s.hours, 'hrs')}
+        </div>
+        ${(s.creek_km > 0 || s.river_km > 0) ? `
+        <div class="mb-3 text-xs text-gray-400">
+          Lake ${s.lake_km} km &nbsp;·&nbsp; Creek ${s.creek_km} km &nbsp;·&nbsp; River ${s.river_km} km
+        </div>` : ''}
+        <div class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-2">Route</div>
+        <div class="flex flex-wrap gap-y-1.5 gap-x-0.5 leading-loose">
+          ${routeChips(day.route)}
+        </div>`;
+      dc.appendChild(card);
+    });
+
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ================================================================
+  // Event handlers
+  // ================================================================
+
+  // Night mode toggle
+  document.querySelectorAll('input[name="night-mode"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const auto = getNightMode() === 'automatic';
+      document.getElementById('add-night-btn').classList.toggle('hidden', auto);
+      document.getElementById('auto-days-box').classList.toggle('hidden', !auto);
+      if (auto) {
+        waypoints = [waypoints[0], waypoints[waypoints.length - 1]];
+        renderWaypoints();
+      }
+    });
+  });
+
+  document.getElementById('add-night-btn').addEventListener('click', () => {
+    waypoints.splice(waypoints.length - 1, 0, '');
+    renderWaypoints();
+  });
+
+  // Plan button
+  document.getElementById('plan-btn').addEventListener('click', () => {
+    if (!graphData) return;
+    const errBox = document.getElementById('error-box');
+    errBox.classList.add('hidden');
+    document.getElementById('results').classList.add('hidden');
+
+    const inputs = document.querySelectorAll('#waypoints-container input[type="text"]');
+    const wps = Array.from(inputs).map(i => i.value.trim());
+
+    if (wps.some(w => !w)) {
+      errBox.textContent = 'Please fill in all waypoint fields.';
+      errBox.classList.remove('hidden');
+      return;
+    }
+
+    const btn = document.getElementById('plan-btn');
+    btn.textContent = 'Planning…'; btn.disabled = true;
+
+    // Use setTimeout so the UI updates before the heavy computation
+    setTimeout(() => {
+      try {
+        const result = runPlan(wps, getSpeeds());
+        if (result.error) {
+          errBox.textContent = result.error;
+          errBox.classList.remove('hidden');
+        } else {
+          renderResults(result);
+        }
+      } catch (e) {
+        errBox.textContent = 'Unexpected error: ' + e.message;
+        errBox.classList.remove('hidden');
+      } finally {
+        btn.textContent = 'Plan Route'; btn.disabled = false;
+      }
+    }, 10);
+  });
+
+  // Download button
+  document.getElementById('download-btn').addEventListener('click', async () => {
+    if (!lastResult) return;
+    const mode = getNightMode();
+    let campsOverride = null;
+
+    if (mode === 'automatic') {
+      const numNightsReq = parseInt(document.getElementById('auto-days')?.value);
+      const meta = getMetadata();
+      let numDays;
+      if (!isNaN(numNightsReq) && numNightsReq >= 1) {
+        numDays = numNightsReq + 1;
+      } else if (meta.start_date && meta.end_date) {
+        const sd = new Date(meta.start_date + 'T12:00:00');
+        const ed = new Date(meta.end_date   + 'T12:00:00');
+        numDays = Math.round((ed - sd) / 86400000) + 1;
+      } else {
+        numDays = Math.max(1, Math.ceil(lastResult.totals.hours / 10));
+      }
+      if (numDays > 1 && lastResult.full_path) {
+        const graph = buildGraph(graphData.edges, getSpeeds());
+        campsOverride = splitPathForDates(lastResult.full_path, graph, numDays);
+      }
+    }
+
+    const btn = document.getElementById('download-btn');
+    btn.textContent = 'Generating…'; btn.disabled = true;
+
+    try {
+      const blob = await generateTripDocx(lastResult, getMetadata(), campsOverride);
+      const start = lastResult.resolved[0].replace(/\s+/g, '_').replace(/\//g, '-');
+      const end   = lastResult.resolved[lastResult.resolved.length-1].replace(/\s+/g, '_').replace(/\//g, '-');
+      const url   = URL.createObjectURL(blob);
+      const a     = document.createElement('a');
+      a.href = url; a.download = `Trip_Posting_${start}_to_${end}.docx`;
+      a.click(); URL.revokeObjectURL(url);
+    } catch (e) {
+      alert('Download error: ' + e.message);
+    } finally {
+      btn.textContent = '↓ Download'; btn.disabled = false;
+    }
+  });
+
+  // ================================================================
+  // Init
+  // ================================================================
+  renderWaypoints();
+  loadData().catch(e => {
+    document.getElementById('loading-notice').textContent =
+      'Failed to load route data. Make sure data.json is in the same folder as this file.';
+  });
+  </script>
+</body>
+</html>
