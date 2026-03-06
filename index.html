@@ -1044,8 +1044,15 @@
         } else {
           if (getNightMode() === 'automatic') {
             const n = parseInt(document.getElementById('auto-days')?.value);
-            result.totals.nights = (!isNaN(n) && n > 0) ? n :
-              (result.suggestions?.applicable ? result.suggestions.multi_day.num_days - 1 : 0);
+            if (!isNaN(n) && n > 0) {
+              result.totals.nights = n;
+              const hoursPerDay = result.totals.hours / (n + 1);
+              const graph = buildGraph(graphData.edges, getSpeeds());
+              result.suggestions = computeSuggestions(result.full_path, graph, hoursPerDay);
+            } else {
+              result.totals.nights = result.suggestions?.applicable
+                ? result.suggestions.multi_day.num_days - 1 : 0;
+            }
           }
           renderResults(result);
         }
