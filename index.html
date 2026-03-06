@@ -136,7 +136,7 @@
         <summary class="flex items-center justify-between px-4 py-3 bg-stone-50
                         cursor-pointer select-none text-sm font-medium text-gray-700
                         hover:bg-stone-100 transition">
-          <span>Pathfinder Trip Posting</span>
+          <span>Trip Posting Details</span>
           <span class="text-gray-400 text-xs">optional — for formatted .docx download</span>
         </summary>
         <div class="p-4 space-y-4 text-sm">
@@ -220,7 +220,7 @@
           class="px-5 py-3 bg-stone-200 text-stone-400 font-semibold rounded-xl
                  transition text-sm cursor-not-allowed"
           title="Plan a route first">
-          &#8595; Download
+          Pathfinder Trip Posting
         </button>
       </div>
 
@@ -890,7 +890,10 @@
 
     document.getElementById('trip-badge').textContent =
       nights === 0 ? 'Day Trip' : nights === 1 ? '1 Night' : `${nights} Nights`;
-    document.getElementById('trip-subtitle').textContent = resolved.join(' → ');
+    document.getElementById('trip-subtitle').textContent =
+      getNightMode() === 'automatic'
+        ? `${resolved[0]} \u2192 ${resolved[resolved.length - 1]}`
+        : resolved.join(' → ');
 
     document.getElementById('trip-totals').innerHTML =
       statPill('Total Paddle', t.paddle_km, 'km', true) +
@@ -936,33 +939,58 @@
     // Day cards
     const dc = document.getElementById('day-cards');
     dc.innerHTML = '';
-    days.forEach(day => {
-      const s = day.stats;
-      const dayLabel = days.length === 1 ? 'Day Trip' :
-        day.day === days.length ? `Day ${day.day} — Final Leg` : `Day ${day.day}`;
+    if (getNightMode() === 'automatic') {
       const card = document.createElement('div');
       card.className = 'bg-white rounded-2xl shadow-lg p-6';
       card.innerHTML = `
         <div class="flex items-center justify-between mb-4">
-          <h3 class="font-semibold text-gray-800 text-base">${dayLabel}</h3>
-          <span class="text-xs text-gray-400 font-medium">${day.from} &#8594; ${day.to}</span>
+          <h3 class="font-semibold text-gray-800 text-base">Full Route</h3>
+          <span class="text-xs text-gray-400 font-medium">${resolved[0]} &#8594; ${resolved[resolved.length - 1]}</span>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
-          ${statPill('Paddle', s.paddle_km, 'km', true)}
-          ${statPill('Portage', s.portage_km, 'km')}
-          ${statPill('Portages', s.portages, 'crossings')}
-          ${statPill('Est. Time', s.hours, 'hrs')}
+          ${statPill('Paddle', t.paddle_km, 'km', true)}
+          ${statPill('Portage', t.portage_km, 'km')}
+          ${statPill('Portages', t.portages, 'crossings')}
+          ${statPill('Est. Time', t.hours, 'hrs')}
         </div>
-        ${(s.creek_km > 0 || s.river_km > 0) ? `
+        ${(t.creek_km > 0 || t.river_km > 0) ? `
         <div class="mb-3 text-xs text-gray-400">
-          Lake ${s.lake_km} km &nbsp;·&nbsp; Creek ${s.creek_km} km &nbsp;·&nbsp; River ${s.river_km} km
+          Lake ${t.lake_km} km &nbsp;·&nbsp; Creek ${t.creek_km} km &nbsp;·&nbsp; River ${t.river_km} km
         </div>` : ''}
         <div class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-2">Route</div>
         <div class="flex flex-wrap gap-y-1.5 gap-x-0.5 leading-loose">
-          ${routeChips(day.route)}
+          ${routeChips(deduplicateRoute(data.full_route_display || []))}
         </div>`;
       dc.appendChild(card);
-    });
+    } else {
+      days.forEach(day => {
+        const s = day.stats;
+        const dayLabel = days.length === 1 ? 'Day Trip' :
+          day.day === days.length ? `Day ${day.day} — Final Leg` : `Day ${day.day}`;
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-2xl shadow-lg p-6';
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-gray-800 text-base">${dayLabel}</h3>
+            <span class="text-xs text-gray-400 font-medium">${day.from} &#8594; ${day.to}</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
+            ${statPill('Paddle', s.paddle_km, 'km', true)}
+            ${statPill('Portage', s.portage_km, 'km')}
+            ${statPill('Portages', s.portages, 'crossings')}
+            ${statPill('Est. Time', s.hours, 'hrs')}
+          </div>
+          ${(s.creek_km > 0 || s.river_km > 0) ? `
+          <div class="mb-3 text-xs text-gray-400">
+            Lake ${s.lake_km} km &nbsp;·&nbsp; Creek ${s.creek_km} km &nbsp;·&nbsp; River ${s.river_km} km
+          </div>` : ''}
+          <div class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-2">Route</div>
+          <div class="flex flex-wrap gap-y-1.5 gap-x-0.5 leading-loose">
+            ${routeChips(day.route)}
+          </div>`;
+        dc.appendChild(card);
+      });
+    }
 
     document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -1014,6 +1042,11 @@
           errBox.textContent = result.error;
           errBox.classList.remove('hidden');
         } else {
+          if (getNightMode() === 'automatic') {
+            const n = parseInt(document.getElementById('auto-days')?.value);
+            result.totals.nights = (!isNaN(n) && n > 0) ? n :
+              (result.suggestions?.applicable ? result.suggestions.multi_day.num_days - 1 : 0);
+          }
           renderResults(result);
         }
       } catch (e) {
@@ -1064,7 +1097,7 @@
     } catch (e) {
       alert('Download error: ' + e.message);
     } finally {
-      btn.textContent = '↓ Download'; btn.disabled = false;
+      btn.textContent = 'Pathfinder Trip Posting'; btn.disabled = false;
     }
   });
 
