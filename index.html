@@ -167,44 +167,88 @@
             </div>
           </div>
           <div class="space-y-1">
-            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Campers</label>
-            <textarea id="tp-campers" rows="3" placeholder="John Smith, Jane Doe, ..."
-                      class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
-                             focus:outline-none focus:ring-2 focus:ring-green-400 resize-y"></textarea>
+            <div class="flex items-center gap-4 mb-1">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Campers / LITs</label>
+              <label class="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+                <input type="radio" name="camper-mode" value="campers" checked class="accent-green-700">
+                Campers
+              </label>
+              <label class="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+                <input type="radio" name="camper-mode" value="lits" class="accent-green-700">
+                LITs
+              </label>
+            </div>
+            <div id="campers-list-container" class="space-y-2"></div>
+            <button id="add-camper-btn"
+              class="w-full mt-1 py-1.5 border border-dashed border-green-400 text-green-700
+                     rounded-lg hover:bg-green-50 transition text-xs font-medium">
+              + Add Camper
+            </button>
           </div>
           <div class="space-y-1">
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Headman <span class="text-gray-400 font-normal">(listed first in Staff, underlined)</span>
+              Headman <span class="text-gray-400 font-normal">(listed first, underlined)</span>
             </label>
-            <input type="text" id="tp-headman" placeholder="Matt Wesorick"
-                   class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
-                          focus:outline-none focus:ring-2 focus:ring-green-400">
+            <div class="flex gap-2">
+              <input type="text" id="tp-headman" placeholder="Ben Zief"
+                     list="staff-names-datalist"
+                     class="w-40 shrink-0 border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-green-400">
+              <input type="text" id="tp-headman-phrase" list="staff-phrases-datalist"
+                     placeholder="phrase (e.g. paddles downstream)"
+                     class="flex-1 min-w-0 border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-green-400">
+            </div>
           </div>
           <div class="space-y-1">
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Staff <span class="text-gray-400 font-normal">(other staff — headman added automatically)</span>
+              Staff <span class="text-gray-400 font-normal">(headman added automatically)</span>
             </label>
-            <textarea id="tp-staff" rows="3" placeholder="Nico Bustamante, ..."
-                      class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
-                             focus:outline-none focus:ring-2 focus:ring-green-400 resize-y"></textarea>
+            <div id="staff-groups-container" class="space-y-2"></div>
+            <button id="add-staff-btn"
+              class="w-full mt-1 py-1.5 border border-dashed border-green-400 text-green-700
+                     rounded-lg hover:bg-green-50 transition text-xs font-medium">
+              + Add Staff Group
+            </button>
           </div>
           <div class="space-y-1">
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Canoes</label>
-            <textarea id="tp-canoes" rows="2" placeholder="#44 Steve Lapey, ..."
-                      class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
-                             focus:outline-none focus:ring-2 focus:ring-green-400 resize-y"></textarea>
+            <div id="canoes-list-container" class="space-y-2"></div>
+            <button id="add-canoe-btn"
+              class="w-full mt-1 py-1.5 border border-dashed border-green-400 text-green-700
+                     rounded-lg hover:bg-green-50 transition text-xs font-medium">
+              + Add Canoe
+            </button>
           </div>
           <div class="space-y-1">
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Nations</label>
-            <textarea id="tp-nations" rows="2" placeholder="..."
+            <select id="tp-nations-preset"
+                    class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-green-400 bg-white mb-1">
+              <option value="">— choose preset or type below —</option>
+            </select>
+            <textarea id="tp-nations" rows="2" placeholder="Type custom or select preset above…"
                       class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
                              focus:outline-none focus:ring-2 focus:ring-green-400 resize-y"></textarea>
           </div>
           <div class="space-y-1">
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Territories</label>
-            <textarea id="tp-territories" rows="2" placeholder="..."
+            <select id="tp-territories-preset"
+                    class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-green-400 bg-white mb-1">
+              <option value="">— choose preset or type below —</option>
+            </select>
+            <textarea id="tp-territories" rows="2" placeholder="Type custom or select preset above…"
                       class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
                              focus:outline-none focus:ring-2 focus:ring-green-400 resize-y"></textarea>
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              Note <span class="text-gray-400 font-normal">(optional — appended at end)</span>
+            </label>
+            <input type="text" id="tp-note" placeholder="e.g. This trip was rerouted to Loon Point on Source Lake."
+                   class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm
+                          focus:outline-none focus:ring-2 focus:ring-green-400">
           </div>
         </div>
       </details>
@@ -266,12 +310,147 @@
   </main>
 
   <datalist id="lakes-datalist"></datalist>
+  <datalist id="staff-phrases-datalist"></datalist>
+  <datalist id="staff-names-datalist"></datalist>
+  <datalist id="camper-names-datalist"></datalist>
+  <datalist id="canoe-names-datalist"></datalist>
 
   <script>
   // ================================================================
   // Constants
   // ================================================================
   const DEFAULT_SPEEDS = { lake: 12, portage: 15, creek: 20, river: 10, overhead: 10 };
+
+  const STAFF_PHRASES = [
+    "ain't nothin to play with",
+    "answers the phone and nobody is there",
+    "are all goofy goobers (rock!)",
+    "are locked in on getting him back",
+    "are on night duty",
+    "are stuck at customs",
+    "ask for a room upgrade",
+    "bounces it in",
+    "bread and fry the catch",
+    "bring the jokes",
+    "build the shrink ray",
+    "buy food to eat",
+    "can dance a Cajun rhythm",
+    "can't find 5 Mile",
+    "carries a big stick",
+    "chase them down",
+    "cheers them on",
+    "checks they got it right",
+    "close behind",
+    "comes in third",
+    "comment",
+    "dance to Italian disco",
+    "do their best stand up",
+    "does a split",
+    "dragging behind",
+    "drops the baton",
+    "duck the rope",
+    "dust off old memorabilia",
+    "fights his way upstream",
+    "film it all",
+    "flick the lights on and off",
+    "follows",
+    "forget to clip on the key",
+    "get stuck in the web",
+    "gets all-dressed",
+    "gets his CDL",
+    "gives orders",
+    "go for ketchup",
+    "go out fishing",
+    "grab the bat",
+    "hand off",
+    "has the list",
+    "has two brims",
+    "have a chance to go to France",
+    "hold down the fort",
+    "honks the horn",
+    "hope for next year",
+    "hoping they don't find any",
+    "hunts for monsters",
+    "install microwave ovens",
+    "is always pushing up the hill",
+    "is like a sprained ankle",
+    "is making pancakes",
+    "jumps back in",
+    "jumps like a Willys in four wheel drive",
+    "jukes them out",
+    "kindles the fire",
+    "lead the way",
+    "leads the charge",
+    "listen to the river sing sweet songs",
+    "make lunches",
+    "misses the deadline",
+    "misses the dynasty",
+    "not far behind",
+    "on backorder",
+    "paddle in sync",
+    "paddle together this time",
+    "paddles downstream",
+    "packs his pencil case",
+    "plans the crime of the century",
+    "poke it with a stick",
+    "pretends to laugh",
+    "pull it off in the final seconds",
+    "put on their armor",
+    "rocks",
+    "rocks the bucket",
+    "root for different teams",
+    "run it back",
+    "say it's just a flesh wound",
+    "searching for the thrill of it",
+    "set out runnin'",
+    "setting a new personal best",
+    "shake and bake",
+    "sharpens the swords",
+    "sits on the rock",
+    "slip on the peel",
+    "sort the containers",
+    "speak softly",
+    "stares at the compass",
+    "stay put",
+    "takes his time",
+    "takes the orders",
+    "takes the tooner",
+    "trade green in for red",
+    "trains [names] in the ways of the Force",
+    "tries hard not to overeat",
+    "tries not to laugh",
+    "wait patiently",
+    "waits to be let in",
+    "walks the wrong way",
+    "watches for the ads",
+    "will paddle over and help set up camp",
+    "will roll, roll, roll",
+    "wonder where the Natch went",
+    "wonders if we still have a DOT",
+    "wired in he had water coming in",
+    "write down the recipe",
+  ];
+
+  const NATIONS_PRESETS = [
+    "Algonquin",
+    "Algonquin, Chippewa, and Mississauga",
+    "Algonquin, Chippewa, Mississauga, and Nipissing",
+    "Chippewa, Mississauga, Nipissing, Ojibwa, Odawa, and Potawatomi",
+    "Cree and Innu",
+    "Cree, Temagami, and Wahnapitae",
+    "Northern Coastal Eastern Cree and Nunavik Inuit",
+  ];
+
+  const TERRITORIES_PRESETS = [
+    "Anishinaabeaki: Robinson-Huron Treaty and Williams Treaty",
+    "Anishinaabeaki: Unceded Omàmìwininìwag (Algonquin)",
+    "Anishinaabeaki: Unceded Omàmìwininìwag (Algonquin) territory",
+    "Anishinaabeaki: Unceded Omàmìwininìwag (Algonquin) territory, Williams Treaty",
+    "Anishinaabeaki: Unceded Omàmìwininìwag (Algonquin) territory, Williams Treaty, Robinson-Huron Treaty",
+    "Eeyou Istchee and Inuit Nunangat: Eeyou Marine Region Land Claims Agreement, James Bay Northern Quebec Agreement, and Nunavik Inuit Land Claims Agreement",
+    "Eeyou Istchee, Eeyou Marine Region Land Claims Agreement, James Bay Northern Quebec Agreement, Nitassinan: Unceded Innu territory",
+    "Robinson-Huron Treaty",
+  ];
 
   // ================================================================
   // Data
@@ -626,12 +805,15 @@
 
     const trip_number  = (metadata.trip_number  || '1').toString().trim();
     const trip_name    = (metadata.trip_name    || 'Temporary').trim();
-    const headman      = (metadata.headman      || '').trim();
-    const campers      = (metadata.campers      || 'None').trim();
-    const staff        = (metadata.staff        || 'None').trim();
-    const canoes       = (metadata.canoes       || 'None').trim();
-    const nations      = (metadata.nations      || 'None').trim();
-    const territories  = (metadata.territories  || 'None').trim();
+    const headman        = (metadata.headman        || '').trim();
+    const headman_phrase = (metadata.headman_phrase || '').trim();
+    const staff_groups   = metadata.staff_groups || [];
+    const is_lits        = metadata.is_lits || false;
+    const campers        = oxfordJoin(metadata.campers_list || []);
+    const canoes         = oxfordJoin(metadata.canoes_list || []);
+    const nations        = (metadata.nations        || '').trim();
+    const territories    = (metadata.territories    || '').trim();
+    const note           = (metadata.note           || '').trim();
 
     let startDt = null, endDt = null;
     try { if (metadata.start_date) startDt = new Date(metadata.start_date + 'T12:00:00'); } catch(e) {}
@@ -642,29 +824,34 @@
     }
 
     const totalDays   = (startDt && endDt) ? Math.round((endDt - startDt) / 86400000) + 1 : t.nights + 1;
-    const totalPeople = (headman ? 1 : 0) + countNames(campers) + countNames(staff);
+    const staffCount  = staff_groups.reduce((sum, g) => {
+      if (!g.names || !g.names.trim()) return sum;
+      return sum + g.names.split(/,|\band\b/i).filter(p => p.trim()).length;
+    }, 0);
+    const totalPeople = (headman ? 1 : 0) + (metadata.campers_list || []).length + staffCount;
     const effectiveCamps = campsOverride !== null ? campsOverride : days.slice(0, -1).map(d => d.to);
 
-    const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    function fmtDate(dt) { return `${DAY_NAMES[dt.getDay()]}. ${dt.getMonth()+1}/${dt.getDate()}`; }
+    const DAY_NAMES = ['Sun.', 'Mon.', 'Tue.', 'Wed.', 'Thurs.', 'Fri.', 'Sat.'];
+    function fmtDate(dt) { return `${DAY_NAMES[dt.getDay()]} ${dt.getMonth()+1}/${dt.getDate()}`; }
 
     const sp0 = { spacing: { before: 0, after: 0 } };
     const blank = () => new Paragraph({ ...sp0, children: [] });
     const paras = [];
 
     // Line 1: header
-    const suffixParts = [];
-    if (startDt && endDt) suffixParts.push(`${fmtDate(startDt)} - ${fmtDate(endDt)}`);
-    else if (startDt) suffixParts.push(fmtDate(startDt));
-    if (totalPeople > 0) suffixParts.push(`${totalPeople} Men`);
-    suffixParts.push(`${totalDays} Days`);
+    const datePart = (startDt && endDt) ? `${fmtDate(startDt)} - ${fmtDate(endDt)}` :
+                     startDt ? fmtDate(startDt) : null;
+    const restParts = [];
+    if (totalPeople > 0) restParts.push(`${totalPeople} Men`);
+    restParts.push(`${totalDays} Days`);
+    const suffixStr = [datePart, ...restParts].filter(Boolean).join(' ~ ');
 
     paras.push(new Paragraph({
       ...sp0,
       children: [
         ...(trip_number ? [new TextRun({ text: `${trip_number}. `, bold: true })] : []),
         ...(trip_name   ? [new TextRun({ text: trip_name, underline: { type: UnderlineType.SINGLE } })] : []),
-        new TextRun({ text: `  \u2013  ${suffixParts.join(' - ')}` }),
+        new TextRun({ text: ` \u2013 ${suffixStr}` }),
       ],
     }));
 
@@ -694,24 +881,29 @@
       ]}));
     }
 
-    // Campers
+    // Campers / LITs
     if (campers) {
       paras.push(blank());
       paras.push(new Paragraph({ ...sp0, children: [
-        new TextRun({ text: 'Campers: ', bold: true }), new TextRun({ text: campers }),
+        new TextRun({ text: (is_lits ? 'LITs: ' : 'Campers: '), bold: true }),
+        new TextRun({ text: campers }),
       ]}));
     }
 
     // Staff
-    if (headman || staff) {
+    const hasStaff = headman || staff_groups.some(g => g.names.trim());
+    if (hasStaff) {
       paras.push(blank());
       const staffRuns = [new TextRun({ text: 'Staff: ', bold: true })];
       if (headman) {
         staffRuns.push(new TextRun({ text: headman, underline: { type: UnderlineType.SINGLE } }));
-        const staffClean = staff.replace(headman, '').replace(/^[\s,]+/, '').trim();
-        if (staffClean && staffClean.toLowerCase() !== 'none')
-          staffRuns.push(new TextRun({ text: ', ' + staffClean }));
-      } else staffRuns.push(new TextRun({ text: staff }));
+        if (headman_phrase) staffRuns.push(new TextRun({ text: ' ' + headman_phrase }));
+      }
+      for (const grp of staff_groups) {
+        if (!grp.names.trim()) continue;
+        staffRuns.push(new TextRun({ text: ` ${grp.connector} ${grp.names}` }));
+        if (grp.phrase) staffRuns.push(new TextRun({ text: ' ' + grp.phrase }));
+      }
       paras.push(new Paragraph({ ...sp0, children: staffRuns }));
     }
 
@@ -744,6 +936,14 @@
       }
     }
 
+    // Note
+    if (note) {
+      paras.push(blank());
+      paras.push(new Paragraph({ ...sp0, children: [
+        new TextRun({ text: 'Note: ', bold: true }), new TextRun({ text: note }),
+      ]}));
+    }
+
     const doc = new Document({ sections: [{ children: paras }] });
     return await Packer.toBlob(doc);
   }
@@ -751,8 +951,19 @@
   // ================================================================
   // UI State
   // ================================================================
-  let waypoints  = ['', ''];
-  let lastResult = null;
+  let waypoints    = ['', ''];
+  let lastResult   = null;
+  let staffGroups  = []; // [{connector: 'while'|'with', names: string, phrase: string}]
+  let campersList  = []; // [string]
+  let canoesList   = []; // [string]
+
+  function oxfordJoin(arr) {
+    const clean = arr.filter(s => s.trim());
+    if (clean.length === 0) return '';
+    if (clean.length === 1) return clean[0];
+    if (clean.length === 2) return `${clean[0]} and ${clean[1]}`;
+    return clean.slice(0, -1).join(', ') + ', and ' + clean[clean.length - 1];
+  }
 
   function getNightMode() {
     return document.querySelector('input[name="night-mode"]:checked')?.value || 'manual';
@@ -790,17 +1001,21 @@
     const todayS = fmtD(today);
     const endDt  = new Date(today); endDt.setDate(endDt.getDate() + getNightsCount());
 
+    const camperMode = document.querySelector('input[name="camper-mode"]:checked')?.value || 'campers';
     return {
-      headman:     document.getElementById('tp-headman')?.value?.trim()         || '',
-      trip_number: document.getElementById('tp-number')?.value?.trim()          || '1',
-      trip_name:   document.getElementById('tp-name')?.value?.trim()            || 'Temporary',
-      start_date:  document.getElementById('tp-start-date')?.value              || todayS,
-      end_date:    document.getElementById('tp-end-date')?.value                || fmtD(endDt),
-      campers:     document.getElementById('tp-campers')?.value?.trim()         || 'None',
-      staff:       document.getElementById('tp-staff')?.value?.trim()           || 'None',
-      canoes:      document.getElementById('tp-canoes')?.value?.trim()          || 'None',
-      nations:     document.getElementById('tp-nations')?.value?.trim()         || 'None',
-      territories: document.getElementById('tp-territories')?.value?.trim()     || 'None',
+      headman:        document.getElementById('tp-headman')?.value?.trim()        || '',
+      headman_phrase: document.getElementById('tp-headman-phrase')?.value?.trim() || '',
+      staff_groups:   staffGroups.map(g => ({ ...g })),
+      trip_number:    document.getElementById('tp-number')?.value?.trim()         || '1',
+      trip_name:      document.getElementById('tp-name')?.value?.trim()           || 'Temporary',
+      start_date:     document.getElementById('tp-start-date')?.value             || todayS,
+      end_date:       document.getElementById('tp-end-date')?.value               || fmtD(endDt),
+      is_lits:        camperMode === 'lits',
+      campers_list:   campersList.map(c => c.trim()).filter(Boolean),
+      canoes_list:    canoesList.map(c => c.trim()).filter(Boolean),
+      nations:        document.getElementById('tp-nations')?.value?.trim()        || '',
+      territories:    document.getElementById('tp-territories')?.value?.trim()    || '',
+      note:           document.getElementById('tp-note')?.value?.trim()           || '',
     };
   }
 
@@ -856,6 +1071,155 @@
         c.appendChild(arr);
       }
     });
+  }
+
+  // ================================================================
+  // Staff groups rendering
+  // ================================================================
+  function renderStaffGroups() {
+    const c = document.getElementById('staff-groups-container');
+    if (!c) return;
+    c.innerHTML = '';
+
+    staffGroups.forEach((grp, i) => {
+      const row = document.createElement('div');
+      row.className = 'flex gap-2 items-center';
+
+      const connSel = document.createElement('select');
+      connSel.className = 'w-16 shrink-0 border border-gray-300 rounded-lg px-1 py-1.5 text-sm ' +
+        'focus:outline-none focus:ring-2 focus:ring-green-400 bg-white';
+      ['while', 'with'].forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt; o.textContent = opt;
+        if (grp.connector === opt) o.selected = true;
+        connSel.appendChild(o);
+      });
+      connSel.addEventListener('change', e => { staffGroups[i].connector = e.target.value; });
+
+      const namesInp = document.createElement('input');
+      namesInp.type = 'text';
+      namesInp.setAttribute('list', 'staff-names-datalist');
+      namesInp.value = grp.names;
+      namesInp.placeholder = 'Name(s)';
+      namesInp.className = 'w-40 shrink-0 border border-gray-300 rounded-lg px-2 py-1.5 text-sm ' +
+        'focus:outline-none focus:ring-2 focus:ring-green-400';
+      namesInp.addEventListener('input', e => { staffGroups[i].names = e.target.value; });
+
+      const phraseInp = document.createElement('input');
+      phraseInp.type = 'text';
+      phraseInp.setAttribute('list', 'staff-phrases-datalist');
+      phraseInp.value = grp.phrase;
+      phraseInp.placeholder = 'phrase';
+      phraseInp.className = 'flex-1 min-w-0 border border-gray-300 rounded-lg px-2 py-1.5 text-sm ' +
+        'focus:outline-none focus:ring-2 focus:ring-green-400';
+      phraseInp.addEventListener('input', e => { staffGroups[i].phrase = e.target.value; });
+
+      const rmBtn = document.createElement('button');
+      rmBtn.innerHTML = '&#10005;';
+      rmBtn.className = 'text-gray-300 hover:text-red-400 text-sm px-1 transition shrink-0';
+      rmBtn.onclick = () => { staffGroups.splice(i, 1); renderStaffGroups(); };
+
+      row.appendChild(connSel);
+      row.appendChild(namesInp);
+      row.appendChild(phraseInp);
+      row.appendChild(rmBtn);
+      c.appendChild(row);
+    });
+  }
+
+  function buildStaffPhrasesDatalist() {
+    const dl = document.getElementById('staff-phrases-datalist');
+    if (!dl) return;
+    STAFF_PHRASES.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      dl.appendChild(opt);
+    });
+  }
+
+  function buildNationsTerritoriesPresets() {
+    const nSel = document.getElementById('tp-nations-preset');
+    const tSel = document.getElementById('tp-territories-preset');
+    NATIONS_PRESETS.forEach(v => {
+      const o = document.createElement('option'); o.value = v; o.textContent = v; nSel.appendChild(o);
+    });
+    TERRITORIES_PRESETS.forEach(v => {
+      const o = document.createElement('option'); o.value = v; o.textContent = v; tSel.appendChild(o);
+    });
+    nSel.addEventListener('change', () => {
+      if (nSel.value) document.getElementById('tp-nations').value = nSel.value;
+    });
+    tSel.addEventListener('change', () => {
+      if (tSel.value) document.getElementById('tp-territories').value = tSel.value;
+    });
+  }
+
+  function makeListRow(listArr, idx, datalistId, placeholder, onRemove) {
+    const row = document.createElement('div');
+    row.className = 'flex gap-2 items-center';
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.setAttribute('list', datalistId);
+    inp.value = listArr[idx];
+    inp.placeholder = placeholder;
+    inp.className = 'flex-1 min-w-0 border border-gray-300 rounded-lg px-2 py-1.5 text-sm ' +
+      'focus:outline-none focus:ring-2 focus:ring-green-400';
+    inp.addEventListener('input', e => { listArr[idx] = e.target.value; });
+    const rmBtn = document.createElement('button');
+    rmBtn.innerHTML = '&#10005;';
+    rmBtn.className = 'text-gray-300 hover:text-red-400 text-sm px-1 transition shrink-0';
+    rmBtn.onclick = onRemove;
+    row.appendChild(inp);
+    row.appendChild(rmBtn);
+    return row;
+  }
+
+  function renderCampersList() {
+    const c = document.getElementById('campers-list-container');
+    if (!c) return;
+    c.innerHTML = '';
+    campersList.forEach((_, i) => {
+      c.appendChild(makeListRow(campersList, i, 'camper-names-datalist', 'Camper name', () => {
+        campersList.splice(i, 1); renderCampersList();
+      }));
+    });
+  }
+
+  function renderCanoesList() {
+    const c = document.getElementById('canoes-list-container');
+    if (!c) return;
+    c.innerHTML = '';
+    canoesList.forEach((_, i) => {
+      c.appendChild(makeListRow(canoesList, i, 'canoe-names-datalist', 'e.g. #55 unnamed', () => {
+        canoesList.splice(i, 1); renderCanoesList();
+      }));
+    });
+  }
+
+  function populateDatalist(id, items) {
+    const dl = document.getElementById(id);
+    if (!dl) return;
+    dl.innerHTML = '';
+    items.forEach(v => {
+      const opt = document.createElement('option'); opt.value = v; dl.appendChild(opt);
+    });
+  }
+
+  async function loadSeasonCSVs() {
+    async function tryFetch(path) {
+      try { const r = await fetch(path); return r.ok ? (await r.text()) : null; }
+      catch { return null; }
+    }
+    function parseCSV(text) {
+      if (!text) return [];
+      return text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    }
+    const [staffText, campersText, canoesText] = await Promise.all([
+      tryFetch('staff.csv'), tryFetch('campers.csv'), tryFetch('canoes.csv'),
+    ]);
+    populateDatalist('staff-names-datalist',  parseCSV(staffText));
+    populateDatalist('camper-names-datalist', parseCSV(campersText));
+    populateDatalist('canoe-names-datalist',  parseCSV(canoesText));
   }
 
   // ================================================================
@@ -1108,9 +1472,38 @@
     }
   });
 
+  document.getElementById('add-staff-btn').addEventListener('click', () => {
+    staffGroups.push({ connector: 'while', names: '', phrase: '' });
+    renderStaffGroups();
+  });
+
+  document.getElementById('add-camper-btn').addEventListener('click', () => {
+    campersList.push('');
+    renderCampersList();
+  });
+
+  document.getElementById('add-canoe-btn').addEventListener('click', () => {
+    canoesList.push('');
+    renderCanoesList();
+  });
+
+  // Update "Add Camper / Add LIT" button label
+  document.querySelectorAll('input[name="camper-mode"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const isLits = radio.value === 'lits';
+      document.getElementById('add-camper-btn').textContent = isLits ? '+ Add LIT' : '+ Add Camper';
+    });
+  });
+
   // ================================================================
   // Init
   // ================================================================
+  buildStaffPhrasesDatalist();
+  buildNationsTerritoriesPresets();
+  renderStaffGroups();
+  renderCampersList();
+  renderCanoesList();
+  loadSeasonCSVs();
   renderWaypoints();
   loadData().catch(e => {
     document.getElementById('loading-notice').textContent =
